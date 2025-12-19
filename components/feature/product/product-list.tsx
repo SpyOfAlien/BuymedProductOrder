@@ -55,7 +55,11 @@ function ProductList({ initialProducts = [], children }: ProductListProps) {
   }, [initialProducts]);
 
   // Fetch filtered products from API
-  const { products: filteredProducts, isLoading, error } = useProducts({
+  const {
+    products: filteredProducts,
+    isLoading,
+    error,
+  } = useProducts({
     search: debouncedSearchQuery || undefined,
     category: selectedCategory || undefined,
   });
@@ -100,7 +104,7 @@ function ProductListFilter() {
     <Select
       value={selectedCategory}
       onChange={(e) => setSelectedCategory(e.target.value)}
-      className="w-48 text-base"
+      className="w-full min-w-48 text-base"
     >
       <option value="">All Categories</option>
       {categories.map((category) => (
@@ -148,7 +152,9 @@ function ProductListContent() {
   );
 }
 
-
-
-export { ProductList , ProductListSearch, ProductListFilter, ProductListContent};
-
+export {
+  ProductList,
+  ProductListSearch,
+  ProductListFilter,
+  ProductListContent,
+};
