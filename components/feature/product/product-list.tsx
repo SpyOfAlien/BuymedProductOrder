@@ -5,15 +5,20 @@ import { Product } from "@/lib/types/product";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import ProductItem from "./product-item";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useProducts } from "@/hooks/use-products";
 
 interface ProductListContextValue {
   products: Product[];
   filteredProducts: Product[];
   searchQuery: string;
+  debouncedSearchQuery: string;
   selectedCategory: string;
   setSearchQuery: (query: string) => void;
   setSelectedCategory: (category: string) => void;
   categories: string[];
+  isLoading: boolean;
+  error: Error | null;
 }
 
 const ProductListContext = React.createContext<ProductListContextValue | null>(
@@ -31,40 +36,41 @@ function useProductListContext() {
 }
 
 interface ProductListProps {
-  products: Product[];
+  initialProducts?: Product[];
   children: React.ReactNode;
 }
 
-function ProductList({ products, children }: ProductListProps) {
+function ProductList({ initialProducts = [], children }: ProductListProps) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedCategory, setSelectedCategory] = React.useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
+  // Get all categories from initial products for the filter dropdown
   const categories = React.useMemo(() => {
+    if (initialProducts.length === 0) return [];
     const uniqueCategories = Array.from(
-      new Set(products.map((p) => p.category))
+      new Set(initialProducts.map((p) => p.category))
     );
     return uniqueCategories.sort();
-  }, [products]);
+  }, [initialProducts]);
 
-  const filteredProducts = React.useMemo(() => {
-    return products.filter((product) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        product.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "" || product.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-  }, [products, searchQuery, selectedCategory]);
+  // Fetch filtered products from API
+  const { products: filteredProducts, isLoading, error } = useProducts({
+    search: debouncedSearchQuery || undefined,
+    category: selectedCategory || undefined,
+  });
 
   const value: ProductListContextValue = {
-    products,
+    products: initialProducts,
     filteredProducts,
     searchQuery,
+    debouncedSearchQuery,
     selectedCategory,
     setSearchQuery,
     setSelectedCategory,
     categories,
+    isLoading,
+    error,
   };
 
   return (
@@ -106,7 +112,23 @@ function ProductListFilter() {
 }
 
 function ProductListContent() {
-  const { filteredProducts } = useProductListContext();
+  const { filteredProducts, isLoading, error } = useProductListContext();
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <p>Loading products...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12 text-destructive">
+        <p>Error: {error.message}</p>
+      </div>
+    );
+  }
 
   if (filteredProducts.length === 0) {
     return (
