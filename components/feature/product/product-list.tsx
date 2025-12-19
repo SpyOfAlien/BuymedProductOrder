@@ -100,6 +100,7 @@ function ProductListFilter() {
     <Select
       value={selectedCategory}
       onChange={(e) => setSelectedCategory(e.target.value)}
+      className="w-48 text-base"
     >
       <option value="">All Categories</option>
       {categories.map((category) => (
