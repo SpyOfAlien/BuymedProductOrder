@@ -1,6 +1,7 @@
 import { CartItem as CartItemType } from "@/lib/types/cart";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/contexts/cart-context";
 
 interface CartItemProps {
   item: CartItemType;
@@ -10,6 +11,7 @@ interface CartItemProps {
 const CartItem = ({ item, onQuantityChange }: CartItemProps) => {
   const { product, quantity } = item;
   const subtotal = product.price * quantity;
+  const { removeFromCart } = useCart();
 
   const handleDecrease = () => {
     if (quantity > 0) {
@@ -29,15 +31,21 @@ const CartItem = ({ item, onQuantityChange }: CartItemProps) => {
     onQuantityChange(product.id, clampedValue);
   };
 
+  const handleRemove = () => {
+    removeFromCart(product.id);
+  };
+
   return (
     <div className="flex items-start justify-between gap-4 py-4 border-b last:border-b-0">
       <div className="flex-1 min-w-0">
         <div className="flex items-start gap-2 mb-1">
           <h4 className="font-medium text-sm">{product.name}</h4>
         </div>
-        <p className="text-sm text-muted-foreground">{formatPrice(product.price)}</p>
+        <p className="text-sm text-muted-foreground">
+          {formatPrice(product.price)}
+        </p>
       </div>
-      
+
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
           <Button
@@ -70,10 +78,18 @@ const CartItem = ({ item, onQuantityChange }: CartItemProps) => {
         <div className="text-right min-w-[80px]">
           <p className="font-semibold text-sm">{formatPrice(subtotal)}</p>
         </div>
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={handleRemove}
+          className="h-8 w-8"
+          title="Remove item"
+        >
+          ×
+        </Button>
       </div>
     </div>
   );
 };
 
 export default CartItem;
-
