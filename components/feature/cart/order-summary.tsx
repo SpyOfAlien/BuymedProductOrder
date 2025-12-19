@@ -1,13 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { CartItem as CartItemType } from "@/lib/types/cart";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatPrice } from "@/lib/utils";
+import { useCart } from "@/contexts/cart-context";
 import CartItem from "./cart-item";
 
 interface OrderSummaryContextValue {
-  items: CartItemType[];
   updateQuantity: (productId: number, quantity: number) => void;
   total: number;
 }
@@ -27,27 +26,13 @@ function useOrderSummaryContext() {
 }
 
 interface OrderSummaryProps {
-  items: CartItemType[];
-  onQuantityChange?: (productId: number, quantity: number) => void;
   children: React.ReactNode;
 }
 
-function OrderSummary({ items, onQuantityChange, children }: OrderSummaryProps) {
-  const updateQuantity = React.useCallback(
-    (productId: number, quantity: number) => {
-      if (onQuantityChange) {
-        onQuantityChange(productId, quantity);
-      }
-    },
-    [onQuantityChange]
-  );
-
-  const total = React.useMemo(() => {
-    return items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  }, [items]);
+function OrderSummary({ children }: OrderSummaryProps) {
+  const { items, updateQuantity, total } = useCart();
 
   const value: OrderSummaryContextValue = {
-    items,
     updateQuantity,
     total,
   };
@@ -68,7 +53,8 @@ function OrderSummaryHeader() {
 }
 
 function OrderSummaryItems() {
-  const { items, updateQuantity } = useOrderSummaryContext();
+  const { items } = useCart();
+  const { updateQuantity } = useOrderSummaryContext();
 
   if (items.length === 0) {
     return (
