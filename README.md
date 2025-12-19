@@ -102,4 +102,4 @@ The application uses **Component Composition** to create flexible, reusable comp
 - Mobile-first approach
 - Single column on mobile, multi-column on desktop
 - Sticky order summary on desktop let use always see their Summary
-- TODO: Sticky Order Summary in bottom of mobile/tablet
+- Sticky Order Summary float button in bottom of mobile/tablet
